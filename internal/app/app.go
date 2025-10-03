@@ -1,8 +1,18 @@
 package app
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
+
+	"github.com/rohanchauhan02/sequence-service/internal/config"
 	HealthHandler "github.com/rohanchauhan02/sequence-service/internal/module/health/delivery/https"
 	HealthRepository "github.com/rohanchauhan02/sequence-service/internal/module/health/repository"
 	HealthUsecase "github.com/rohanchauhan02/sequence-service/internal/module/health/usecase"
@@ -14,16 +24,42 @@ import (
 
 func Init() {
 	e := echo.New()
+	// Load configuration
+	cnf := config.NewImmutableConfig()
 
+	// Initialize repositories
 	healthRepo := HealthRepository.NewHealthRepository(nil)
-	healthUsecase := HealthUsecase.NewHealthUsecase(healthRepo)
-	HealthHandler.NewHealthHandler(e, healthUsecase)
-
 	workflowRepo := WorkflowRepository.NewWorkflowRepository(nil)
+
+
+	// Initialize usecases
+	healthUsecase := HealthUsecase.NewHealthUsecase(healthRepo)
 	workflowUsecase := WorkflowUsecase.NewWorkflowUsecase(workflowRepo)
+
+	// Initialize handlers
+	HealthHandler.NewHealthHandler(e, healthUsecase)
 	WorkflowHandler.NewWorkflowHandler(e, workflowUsecase)
 
-	if err := e.Start(":8001"); err != nil {
-		panic(err)
+	// Start server in a separate goroutine
+	serverAddr := fmt.Sprintf(":%s", cnf.GetPort())
+	go func() {
+		if err := e.Start(serverAddr); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server shutdown unexpectedly: %v", err)
+		}
+	}()
+
+	// Graceful shutdown handling
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	log.Info("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := e.Shutdown(ctx); err != nil {
+		log.Errorf("Server forced to shutdown: %v", err)
 	}
+	log.Info("Server exited properly.")
 }

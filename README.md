@@ -39,7 +39,7 @@ Each sequence can have multiple steps (email subject + content), with options fo
    go run main.go
    ```
 
-Server will run on: **[http://localhost:8001](http://localhost:8001)**
+Server will run on: **[http://localhost:8080](http://localhost:8080)**
 
 ---
 
