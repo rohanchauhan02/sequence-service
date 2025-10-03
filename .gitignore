@@ -31,3 +31,5 @@ vendor/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+configs/app.config.local.yml
