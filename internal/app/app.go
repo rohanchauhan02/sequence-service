@@ -16,6 +16,7 @@ import (
 	HealthHandler "github.com/rohanchauhan02/sequence-service/internal/module/health/delivery/https"
 	HealthRepository "github.com/rohanchauhan02/sequence-service/internal/module/health/repository"
 	HealthUsecase "github.com/rohanchauhan02/sequence-service/internal/module/health/usecase"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/database"
 
 	WorkflowHandler "github.com/rohanchauhan02/sequence-service/internal/module/workflow/delivery/https"
 	WorkflowRepository "github.com/rohanchauhan02/sequence-service/internal/module/workflow/repository"
@@ -24,13 +25,22 @@ import (
 
 func Init() {
 	e := echo.New()
+	
 	// Load configuration
 	cnf := config.NewImmutableConfig()
 
-	// Initialize repositories
-	healthRepo := HealthRepository.NewHealthRepository(nil)
-	workflowRepo := WorkflowRepository.NewWorkflowRepository(nil)
+	// Initialize database
+	dbClient := database.NewPostgressClient(cnf)
 
+	db, err := dbClient.InitClient(context.TODO())
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+		panic(err)
+	}
+
+	// Initialize repositories
+	healthRepo := HealthRepository.NewHealthRepository(db)
+	workflowRepo := WorkflowRepository.NewWorkflowRepository(db)
 
 	// Initialize usecases
 	healthUsecase := HealthUsecase.NewHealthUsecase(healthRepo)

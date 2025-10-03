@@ -12,10 +12,23 @@ import (
 type (
 	ImmutableConfig interface {
 		GetPort() string
+		GetDBConf() DB
 	}
 
 	config struct {
 		Port string `mapstructure:"PORT"`
+		DB   DB     `mapstructure:"DB"`
+	}
+	DB struct {
+		Host             string `mapstructure:"HOST"`
+		Port             string `mapstructure:"PORT"`
+		Name             string `mapstructure:"NAME"`
+		User             string `mapstructure:"USER"`
+		Password         string `mapstructure:"PASSWORD"`
+		MaxIdleConns     int    `mapstructure:"MAX_IDLE_CONNS"`
+		MaxOpenConns     int    `mapstructure:"MAX_OPEN_CONNS"`
+		MaxLifetimeConns int    `mapstructure:"MAX_LIFETIME_CONNS"`
+		SSLMode          string `mapstructure:"SSL_MODE"`
 	}
 )
 
@@ -62,4 +75,8 @@ func NewImmutableConfig() ImmutableConfig {
 
 func (c *config) GetPort() string {
 	return c.Port
+}
+
+func (im *config) GetDBConf() DB {
+	return im.DB
 }
