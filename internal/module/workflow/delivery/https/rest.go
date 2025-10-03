@@ -34,7 +34,7 @@ func (h *workflowHandler) CreateSequence(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
 
 	reqPayload := new(dto.CreateSequenceRequest)
-	if err := ac.Validate(reqPayload); err != nil {
+	if err := ac.CustomBind(reqPayload); err != nil {
 		log.Errorf("CreateSequence - validation error: %v", err)
 		return ac.CustomResponse(http.StatusText(http.StatusBadRequest), nil, "", err.Error(), http.StatusBadRequest, nil)
 	}

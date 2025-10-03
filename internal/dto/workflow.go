@@ -4,9 +4,8 @@ type CreateSequenceRequest struct {
 	Name                 string              `json:"name" validate:"required,min=1,max=255"`
 	OpenTrackingEnabled  bool                `json:"open_tracking_enabled"`
 	ClickTrackingEnabled bool                `json:"click_tracking_enabled"`
-	Steps                []CreateStepRequest `json:"steps" validate:"required,min=1,dive"`
+	Steps                []CreateStepRequest `json:"steps"`
 }
-
 type CreateSequenceResponse struct {
 	ID string `json:"id"`
 }
