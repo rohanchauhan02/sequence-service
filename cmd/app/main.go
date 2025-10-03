@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/rohanchauhan02/sequence-service/internal/app"
 
 func main() {
-	fmt.Println("Hello, world!")
+	app.Init()
 }
