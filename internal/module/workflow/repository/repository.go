@@ -17,11 +17,21 @@ func NewWorkflowRepository(db *gorm.DB) workflow.Repository {
 	}
 }
 
-func (r *workflowRepository) CreateSequence(tx *gorm.DB, sequence *models.Sequence) (*models.Sequence, error){
-	if err := r.db.Create(sequence).Error;  err != nil {
+func (r *workflowRepository) CreateSequence(tx *gorm.DB, sequence *models.Sequence) (*models.Sequence, error) {
+	if err := r.db.Create(sequence).Error; err != nil {
 		return nil, err
 	}
 	return sequence, nil
+}
+
+func (r *workflowRepository) GetSequence(sequenceID uuid.UUID) (*models.Sequence, error) {
+	var sequence models.Sequence
+	if err := r.db.Preload("Steps", func(db *gorm.DB) *gorm.DB {
+		return db.Order("step_order ASC")
+	}).First(&sequence, "id = ?", sequenceID).Error; err != nil {
+		return nil, err
+	}
+	return &sequence, nil
 }
 
 func (r *workflowRepository) CreateSteps(tx *gorm.DB, steps []models.Step) (*[]models.Step, error) {
@@ -31,10 +41,18 @@ func (r *workflowRepository) CreateSteps(tx *gorm.DB, steps []models.Step) (*[]m
 	return &steps, nil
 }
 
-func (r *workflowRepository) UpdateStep(tx *gorm.DB, step *models.Step) error {
-	return tx.Save(step).Error
+func (r *workflowRepository) GetStepByID(sequenceID, stepID uuid.UUID) (*models.Step, error) {
+	var step models.Step
+	if err := r.db.Where("id = ? AND sequence_id = ?", stepID, sequenceID).First(&step).Error; err != nil {
+		return nil, err
+	}
+	return &step, nil
 }
 
-func (r *workflowRepository) DeleteStep(tx *gorm.DB, id uuid.UUID) error {
-	return tx.Delete(&models.Step{}, "id = ?", id).Error
+func (r *workflowRepository) UpdateStep(tx *gorm.DB, step *models.Step) error {
+	return r.db.Save(step).Error
+}
+
+func (r *workflowRepository) DeleteStep(tx *gorm.DB, sequenceID, stepID uuid.UUID) error {
+	return tx.Delete(&models.Step{}, "id = ? AND sequence_id = ?", stepID, sequenceID).Error
 }

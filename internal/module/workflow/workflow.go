@@ -10,11 +10,18 @@ import (
 
 type Usecase interface {
 	CreateSequence(c echo.Context, req *dto.CreateSequenceRequest) (*dto.CreateSequenceResponse, error)
+	GetSequence(c echo.Context, sequenceID uuid.UUID) (*models.Sequence, error)
+	UpdateStep(c echo.Context, sequenceID uuid.UUID, stepID uuid.UUID, req *dto.UpdateStepRequest) error
+	DeleteStep(c echo.Context, sequenceID uuid.UUID, stepID uuid.UUID) error
 }
 
 type Repository interface {
 	CreateSequence(tx *gorm.DB, sequence *models.Sequence) (*models.Sequence, error)
+	GetSequence(sequenceID uuid.UUID) (*models.Sequence, error)
+
 	CreateSteps(tx *gorm.DB, steps []models.Step) (*[]models.Step, error)
+	GetStepByID(sequenceID uuid.UUID, stepID uuid.UUID) (*models.Step, error)
+
 	UpdateStep(tx *gorm.DB, sequence *models.Step) error
-	DeleteStep(tx *gorm.DB, id uuid.UUID) error
+	DeleteStep(tx *gorm.DB, sequenceID uuid.UUID, stepID uuid.UUID) error
 }
