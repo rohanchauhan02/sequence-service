@@ -33,3 +33,5 @@ vendor/
 Thumbs.db
 
 configs/app.config.local.yml
+cmd/app/configs/app.config.local.yml
+

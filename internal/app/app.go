@@ -10,13 +10,18 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+
+	CustomMiddleware "github.com/rohanchauhan02/sequence-service/internal/pkg/middleware"
 
 	"github.com/rohanchauhan02/sequence-service/internal/config"
 	HealthHandler "github.com/rohanchauhan02/sequence-service/internal/module/health/delivery/https"
 	HealthRepository "github.com/rohanchauhan02/sequence-service/internal/module/health/repository"
 	HealthUsecase "github.com/rohanchauhan02/sequence-service/internal/module/health/usecase"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/ctx"
 	"github.com/rohanchauhan02/sequence-service/internal/pkg/database"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/utils"
 
 	WorkflowHandler "github.com/rohanchauhan02/sequence-service/internal/module/workflow/delivery/https"
 	WorkflowRepository "github.com/rohanchauhan02/sequence-service/internal/module/workflow/repository"
@@ -25,7 +30,7 @@ import (
 
 func Init() {
 	e := echo.New()
-	
+
 	// Load configuration
 	cnf := config.NewImmutableConfig()
 
@@ -37,6 +42,30 @@ func Init() {
 		log.Fatalf("Failed to connect to database: %v", err)
 		panic(err)
 	}
+
+	// use requestID middleware
+	e.Use(CustomMiddleware.MiddlewareRequestID())
+	e.Pre(middleware.RemoveTrailingSlash())
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
+	e.Use(middleware.Gzip())
+
+	// Middleware to inject dependencies into the request context
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			customCtx := &ctx.CustomApplicationContext{
+				Context:    c,
+				Config:     cnf,
+				PostgresDB: db,
+			}
+			return next(customCtx)
+		}
+	})
+	e.Use(middleware.CORS())
+
+	validator := utils.DefaultValidator()
+	e.Validator = validator
 
 	// Initialize repositories
 	healthRepo := HealthRepository.NewHealthRepository(db)
