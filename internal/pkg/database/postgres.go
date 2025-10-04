@@ -19,7 +19,6 @@ type (
 
 	database struct {
 		SharedConfig config.ImmutableConfig
-
 	}
 )
 
@@ -28,6 +27,8 @@ var (
 	db   *gorm.DB
 	err  error
 )
+
+var gormOpen = gorm.Open
 
 func NewPostgressClient(conf config.ImmutableConfig) Postgress {
 	return &database{
@@ -53,7 +54,7 @@ func (d *database) InitClient(ctx context.Context) (*gorm.DB, error) {
 		// Retry mechanism for transient failures
 		maxRetries := 3
 		for i := range maxRetries {
-			db, err = gorm.Open(postgres.New(postgres.Config{
+			db, err = gormOpen(postgres.New(postgres.Config{
 				DSN:                  connectionString,
 				PreferSimpleProtocol: true,
 			}), &gorm.Config{

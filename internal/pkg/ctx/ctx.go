@@ -92,3 +92,13 @@ func mapValidationErrors(err error) error {
 	}
 	return err
 }
+
+func NewMockCtx(db *gorm.DB) echo.Context {
+	e := echo.New()
+	c := e.NewContext(nil, nil)
+	return &CustomApplicationContext{
+		Context:    c,
+		PostgresDB: db,
+		AppLoger:   logger.NewLogger(),
+	}
+}
