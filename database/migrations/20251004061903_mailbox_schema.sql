@@ -91,6 +91,16 @@ CREATE TABLE email_events (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE kafka_batches (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    topic VARCHAR(100) NOT NULL,
+    partition INTEGER NOT NULL,
+    offset BIGINT NOT NULL,
+    processed_at TIMESTAMPTZ DEFAULT NOW(),
+    email_count INTEGER DEFAULT 0,
+    batch_size INTEGER DEFAULT 0
+);
+
 CREATE INDEX idx_sequence_mailboxes_mailbox_id ON sequence_mailboxes(mailbox_id);
 CREATE INDEX idx_contacts_email ON contacts(email);
 CREATE INDEX idx_contacts_status ON contacts(status);
@@ -156,6 +166,7 @@ DROP TABLE IF EXISTS sequence_contacts;
 DROP TABLE IF EXISTS contacts;
 DROP TABLE IF EXISTS sequence_mailboxes;
 DROP TABLE IF EXISTS mailboxes;
+DROP TABLE IF EXISTS kafka_batches;
 
 DROP TYPE IF EXISTS email_event_type;
 DROP TYPE IF EXISTS email_queue_status;
