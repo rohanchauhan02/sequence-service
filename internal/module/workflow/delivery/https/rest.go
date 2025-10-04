@@ -35,9 +35,9 @@ func NewWorkflowHandler(e *echo.Echo, usecase workflow.Usecase) {
 // @Accept       json
 // @Produce      json
 // @Param        sequence  body      dto.CreateSequenceRequest  true  "Sequence details"
-// @Success      201  {object}  dto.CreateSequenceResponse
-// @Failure      400  {object}  map[string]interface{}
-// @Failure      500  {object}  map[string]interface{}
+// @Success      201  {object}  dto.ResponsePattern{data=dto.CreateSequenceResponse}
+// @Failure      400  {object}  dto.ResponsePattern
+// @Failure      500  {object}  dto.ResponsePattern
 // @Router       /sequence [post]
 func (h *workflowHandler) CreateSequence(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
@@ -65,9 +65,9 @@ func (h *workflowHandler) CreateSequence(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Sequence ID"
-// @Success      200  {object}  models.Sequence
-// @Failure      400  {object}  map[string]interface{}
-// @Failure      500  {object}  map[string]interface{}
+// @Success      200  {object}  dto.ResponsePattern{data=models.Sequence}
+// @Failure      400  {object} dto.ResponsePattern
+// @Failure      500  {object} dto.ResponsePattern
 // @Router       /sequence/{id} [get]
 func (h *workflowHandler) GetSequence(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
@@ -98,9 +98,9 @@ func (h *workflowHandler) GetSequence(c echo.Context) error {
 // @Param        id      path      string                   true  "Sequence ID"
 // @Param        stepId  path      string                   true  "Step ID"
 // @Param        step    body      dto.UpdateStepRequest    true  "Step details to update"
-// @Success      200  {object}  map[string]string
-// @Failure      400  {object}  map[string]interface{}
-// @Failure      500  {object}  map[string]interface{}
+// @Success      200  {object}  dto.ResponsePattern
+// @Failure      400  {object}  dto.ResponsePattern
+// @Failure      500  {object}  dto.ResponsePattern
 // @Router       /sequence/{id}/steps/{stepId} [put]
 func (h *workflowHandler) UpdateStep(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
@@ -146,9 +146,9 @@ func (h *workflowHandler) UpdateStep(c echo.Context) error {
 // @Produce      json
 // @Param        id      path      string  true  "Sequence ID"
 // @Param        stepId  path      string  true  "Step ID"
-// @Success      200  {object}  map[string]string
-// @Failure      400  {object}  map[string]interface{}
-// @Failure      500  {object}  map[string]interface{}
+// @Success      200  {object}  dto.ResponsePattern{data=string}
+// @Failure      400  {object}  dto.ResponsePattern
+// @Failure      500  {object}  dto.ResponsePattern
 // @Router       /sequence/{id}/steps/{stepId} [delete]
 func (h *workflowHandler) DeleteStep(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
@@ -187,9 +187,9 @@ func (h *workflowHandler) DeleteStep(c echo.Context) error {
 // @Produce      json
 // @Param        id        path      string                           true  "Sequence ID"
 // @Param        tracking  body      dto.UpdateSequenceTrackingRequest  true  "Tracking information to update"
-// @Success      200  {object}  map[string]string
-// @Failure      400  {object}  map[string]interface{}
-// @Failure      500  {object}  map[string]interface{}
+// @Success      200  {object}  dto.ResponsePattern{data=models.Sequence}
+// @Failure      400  {object}  dto.ResponsePattern{error_message=string}
+// @Failure      500  {object}  dto.ResponsePattern
 // @Router       /sequence/{id} [patch]
 func (h *workflowHandler) UpdateSequenceTracking(c echo.Context) error {
 

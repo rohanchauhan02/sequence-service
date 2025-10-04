@@ -41,6 +41,21 @@ definitions:
     - subject
     - wait_days
     type: object
+  dto.ResponsePattern:
+    properties:
+      code:
+        type: integer
+      data: {}
+      error_message:
+        type: string
+      message:
+        type: string
+      meta: {}
+      request_id:
+        type: string
+      status:
+        type: string
+    type: object
   dto.UpdateSequenceTrackingRequest:
     properties:
       click_tracking_enabled:
@@ -116,17 +131,20 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.CreateSequenceResponse'
+            allOf:
+            - $ref: '#/definitions/dto.ResponsePattern'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CreateSequenceResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
       summary: Create a new email sequence
       tags:
       - Sequences
@@ -147,17 +165,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Sequence'
+            allOf:
+            - $ref: '#/definitions/dto.ResponsePattern'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Sequence'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
       summary: Get sequence details
       tags:
       - Sequences
@@ -183,19 +204,25 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/dto.ResponsePattern'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Sequence'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/dto.ResponsePattern'
+            - properties:
+                error_message:
+                  type: string
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
       summary: Update sequence tracking information
       tags:
       - Sequences
@@ -221,19 +248,20 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            allOf:
+            - $ref: '#/definitions/dto.ResponsePattern'
+            - properties:
+                data:
+                  type: string
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
       summary: Delete a step from the sequence
       tags:
       - Sequences
@@ -264,19 +292,15 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.ResponsePattern'
       summary: Update a step in the sequence
       tags:
       - Sequences

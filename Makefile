@@ -1,5 +1,5 @@
 
-start:
+start: docs
 	go run cmd/app/main.go
 
 .PHONY: docs install-mockgen mock
