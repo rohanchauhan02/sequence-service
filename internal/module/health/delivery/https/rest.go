@@ -3,6 +3,7 @@ package https
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/rohanchauhan02/sequence-service/internal/module/health"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/ctx"
 )
 
 type healthHandler struct {
@@ -19,6 +20,22 @@ func NewHealthHandler(e *echo.Echo, usecase health.Usecase) {
 	api.GET("/health", h.Health)
 }
 
+// Health godoc
+// @Summary      Check the health status of the service
+// @Description  Returns the health status of the service
+// @Tags         Health
+// @Produce      json
+// @Success      200  {object}  dto.ResponsePattern
+// @Failure      500  {object}  dto.ResponsePattern
+// @Router       /health [get]
 func (h *healthHandler) Health(c echo.Context) error {
-	return c.JSON(200, "Service is healthy")
+	ac := c.(*ctx.CustomApplicationContext)
+
+	resp, err := h.usecase.Health()
+	if err != nil {
+		ac.AppLoger.Errorf("Health - usecase error: %v", err)
+		return ac.CustomResponse("Service is unhealthy", nil, "", err.Error(), 500, nil)
+	}
+
+	return ac.CustomResponse("Service is healthy", resp, "Service is healthy", "", 200, nil)
 }

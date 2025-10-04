@@ -113,6 +113,23 @@ definitions:
 info:
   contact: {}
 paths:
+  /health:
+    get:
+      description: Returns the health status of the service
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ResponsePattern'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ResponsePattern'
+      summary: Check the health status of the service
+      tags:
+      - Health
   /sequence:
     post:
       consumes:

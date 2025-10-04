@@ -83,13 +83,6 @@ make migrate-status
 
 # Generate Swagger docs
 make swagger
-
-# Code quality
-make lint
-make fmt
-
-# Clean build
-make clean
 ```
 
 ### Manual Commands
@@ -243,7 +236,6 @@ Start server and visit: `http://localhost:8080/swagger`
 
 ```bash
 make fmt    # Format code
-make lint   # Lint code
 make test   # Run tests
 ```
 

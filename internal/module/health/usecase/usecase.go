@@ -11,3 +11,7 @@ func NewHealthUsecase(repository health.Repository) health.Usecase {
 		repository: repository,
 	}
 }
+
+func (h *healthUsecase) Health() (map[string]any, error) {
+	return h.repository.Health()
+}

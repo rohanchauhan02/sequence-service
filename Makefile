@@ -1,11 +1,14 @@
 APP_NAME=sequence-service
-DB_STRING=postgres://user:pass@localhost:5432/sequence_db?sslmode=disable
+USER=root
+PASSWORD=root
+DB_NAME=sequence_db
+DB_STRING=postgres://"$(USER)":"$(PASSWORD)"@localhost:5432/"$(DB_NAME)"?sslmode=disable
 
-.PHONY: run build test clean migrate swagger fmt lint
+.PHONY: run build test clean migrate swagger fmt
 
 # Run the app
 run:
-	go run cmd/api/main.go
+	go run cmd/app/main.go
 
 # Build binary
 build:
@@ -34,12 +37,9 @@ migrate-create:
 
 # Generate Swagger docs
 swagger:
-	swag init -g cmd/api/main.go -o docs
+	swag init -g cmd/app/main.go -o docs/swagger/
 
 # Code formatting
 fmt:
 	go fmt ./...
 
-# Lint code
-lint:
-	golangci-lint run
