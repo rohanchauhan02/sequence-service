@@ -25,7 +25,7 @@ func NewWorkflowHandler(e *echo.Echo, usecase workflow.Usecase) {
 	api.GET("/sequence/:id", h.GetSequence)
 	api.PUT("/sequence/:id/steps/:stepId", h.UpdateStep)
 	api.DELETE("/sequence/:id/steps/:stepId", h.DeleteStep)
-	api.PATCH("/sequence/:id/tracking", h.UpdateSequence)
+	api.PATCH("/sequence/:id", h.UpdateSequenceTracking)
 }
 
 // Handlers
@@ -133,6 +133,31 @@ func (h *workflowHandler) DeleteStep(c echo.Context) error {
 	return ac.CustomResponse("Step deleted successfully", nil, "", "", http.StatusOK, nil)
 }
 
-func (h *workflowHandler) UpdateSequence(c echo.Context) error {
-	return nil
+func (h *workflowHandler) UpdateSequenceTracking(c echo.Context) error {
+
+	ac := c.(*ctx.CustomApplicationContext)
+
+	sequenceID := c.Param("id")
+	ac.AppLoger.Infof("UpdateSequenceTracking - sequenceID: %s", sequenceID)
+	sequenceUUID, err := uuid.Parse(sequenceID)
+	if err != nil {
+		ac.AppLoger.Errorf("UpdateSequenceTracking - invalid sequence ID: %v", err)
+		return ac.CustomResponse(http.StatusText(http.StatusBadRequest), nil, "", "Invalid sequence ID", http.StatusBadRequest, nil)
+	}
+
+	reqPayload := new(dto.UpdateSequenceTrackingRequest)
+	if err := ac.CustomBind(reqPayload); err != nil {
+		ac.AppLoger.Errorf("UpdateSequenceTracking - validation error: %v", err)
+		return ac.CustomResponse(http.StatusText(http.StatusBadRequest), nil, "", err.Error(), http.StatusBadRequest, nil)
+	}
+
+	err = h.usecase.UpdateSequenceTracking(c, sequenceUUID, reqPayload)
+	if err != nil {
+		ac.AppLoger.Errorf("UpdateSequenceTracking - usecase error: %v", err)
+		return ac.CustomResponse(http.StatusText(http.StatusInternalServerError), nil, "", err.Error(), http.StatusInternalServerError, nil)
+	}
+
+	ac.AppLoger.Infof("UpdateSequenceTracking - tracking info updated for sequence ID: %s", sequenceID)
+
+	return ac.CustomResponse("Sequence tracking info updated successfully", map[string]string{"sequence_id": sequenceUUID.String()}, "", "", http.StatusOK, nil)
 }

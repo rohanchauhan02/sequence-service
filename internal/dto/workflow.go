@@ -9,6 +9,10 @@ type CreateSequenceRequest struct {
 type CreateSequenceResponse struct {
 	ID string `json:"id"`
 }
+type UpdateSequenceTrackingRequest struct {
+	OpenTrackingEnabled  *bool `json:"open_tracking_enabled"`
+	ClickTrackingEnabled *bool `json:"click_tracking_enabled"`
+}
 
 type CreateStepRequest struct {
 	StepOrder int    `json:"step_order" validate:"required,min=0"`

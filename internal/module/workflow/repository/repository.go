@@ -18,7 +18,7 @@ func NewWorkflowRepository(db *gorm.DB) workflow.Repository {
 }
 
 func (r *workflowRepository) CreateSequence(tx *gorm.DB, sequence *models.Sequence) (*models.Sequence, error) {
-	if err := r.db.Create(sequence).Error; err != nil {
+	if err := tx.Create(sequence).Error; err != nil {
 		return nil, err
 	}
 	return sequence, nil
@@ -34,8 +34,12 @@ func (r *workflowRepository) GetSequence(sequenceID uuid.UUID) (*models.Sequence
 	return &sequence, nil
 }
 
+func (r *workflowRepository) UpdateSequenceTracking(tx *gorm.DB, sequence *models.Sequence) error {
+	return tx.Save(sequence).Error
+}
+
 func (r *workflowRepository) CreateSteps(tx *gorm.DB, steps []models.Step) (*[]models.Step, error) {
-	if err := r.db.Create(&steps).Error; err != nil {
+	if err := tx.Create(&steps).Error; err != nil {
 		return nil, err
 	}
 	return &steps, nil
@@ -50,7 +54,7 @@ func (r *workflowRepository) GetStepByID(sequenceID, stepID uuid.UUID) (*models.
 }
 
 func (r *workflowRepository) UpdateStep(tx *gorm.DB, step *models.Step) error {
-	return r.db.Save(step).Error
+	return tx.Save(step).Error
 }
 
 func (r *workflowRepository) DeleteStep(tx *gorm.DB, sequenceID, stepID uuid.UUID) error {

@@ -68,13 +68,53 @@ func (u *workflowUsecase) GetSequence(c echo.Context, sequenceID uuid.UUID) (*mo
 	return u.repository.GetSequence(sequenceID)
 }
 
+func (u *workflowUsecase) UpdateSequenceTracking(c echo.Context, sequenceID uuid.UUID, req *dto.UpdateSequenceTrackingRequest) error {
+	ac := c.(*ctx.CustomApplicationContext)
+	sequence, err := u.repository.GetSequence(sequenceID)
+	if sequence == nil {
+		ac.AppLoger.Error("UpdateSequenceTracking - sequence not found")
+		return echo.NewHTTPError(404, "Sequence not found")
+	}
+
+	if err != nil {
+		ac.AppLoger.Errorf("UpdateSequenceTracking - failed to fetch sequence: %v", err)
+		return err
+	}
+
+	if req.OpenTrackingEnabled != nil {
+		sequence.OpenTrackingEnabled = *req.OpenTrackingEnabled
+	}
+
+	if req.ClickTrackingEnabled != nil {
+		sequence.ClickTrackingEnabled = *req.ClickTrackingEnabled
+	}
+
+	tx := ac.PostgresDB.Begin()
+	defer tx.Rollback()
+
+	err = u.repository.UpdateSequenceTracking(tx, sequence)
+	if err != nil {
+		ac.AppLoger.Errorf("UpdateSequenceTracking - failed to update sequence: %v", err)
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		ac.AppLoger.Errorf("UpdateSequenceTracking - failed to commit transaction: %v", err)
+		return err
+	}
+	ac.AppLoger.Infof("UpdateSequenceTracking - sequence tracking updated for ID: %s", sequenceID.String())
+	return nil
+}
+
 func (u *workflowUsecase) UpdateStep(c echo.Context, sequenceID uuid.UUID, stepID uuid.UUID, req *dto.UpdateStepRequest) error {
 	ac := c.(*ctx.CustomApplicationContext)
 	existingStep, err := u.repository.GetStepByID(sequenceID, stepID)
 	if existingStep == nil {
+		ac.AppLoger.Error("UpdateStep - step not found")
 		return echo.NewHTTPError(404, "Step not found")
 	}
 	if err != nil {
+		ac.AppLoger.Errorf("UpdateStep - failed to fetch step: %v", err)
 		return err
 	}
 
@@ -118,6 +158,7 @@ func (u *workflowUsecase) DeleteStep(c echo.Context, sequenceID uuid.UUID, stepI
 		ac.AppLoger.Errorf("DeleteStep - failed to commit transaction: %v", err)
 		return err
 	}
+	ac.AppLoger.Infof("DeleteStep - step deleted for sequenceID: %s, stepID: %s", sequenceID.String(), stepID.String())
 
 	return nil
 }
