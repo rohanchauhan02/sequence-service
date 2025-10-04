@@ -1,0 +1,283 @@
+definitions:
+  dto.CreateSequenceRequest:
+    properties:
+      click_tracking_enabled:
+        type: boolean
+      name:
+        maxLength: 255
+        minLength: 1
+        type: string
+      open_tracking_enabled:
+        type: boolean
+      steps:
+        items:
+          $ref: '#/definitions/dto.CreateStepRequest'
+        type: array
+    required:
+    - name
+    type: object
+  dto.CreateSequenceResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  dto.CreateStepRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      step_order:
+        minimum: 0
+        type: integer
+      subject:
+        minLength: 1
+        type: string
+      wait_days:
+        minimum: 0
+        type: integer
+    required:
+    - content
+    - step_order
+    - subject
+    - wait_days
+    type: object
+  dto.UpdateSequenceTrackingRequest:
+    properties:
+      click_tracking_enabled:
+        type: boolean
+      open_tracking_enabled:
+        type: boolean
+    type: object
+  dto.UpdateStepRequest:
+    properties:
+      content:
+        minLength: 1
+        type: string
+      subject:
+        minLength: 1
+        type: string
+    type: object
+  models.Sequence:
+    properties:
+      click_tracking_enabled:
+        type: boolean
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      open_tracking_enabled:
+        type: boolean
+      steps:
+        items:
+          $ref: '#/definitions/models.Step'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  models.Step:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      sequence_id:
+        type: string
+      step_order:
+        type: integer
+      subject:
+        type: string
+      updated_at:
+        type: string
+      wait_days:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /sequence:
+    post:
+      consumes:
+      - application/json
+      description: Create a new email sequence with steps
+      parameters:
+      - description: Sequence details
+        in: body
+        name: sequence
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSequenceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.CreateSequenceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new email sequence
+      tags:
+      - Sequences
+  /sequence/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve details of a specific email sequence by its ID
+      parameters:
+      - description: Sequence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Sequence'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get sequence details
+      tags:
+      - Sequences
+    patch:
+      consumes:
+      - application/json
+      description: Update tracking information for a specific email sequence
+      parameters:
+      - description: Sequence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Tracking information to update
+        in: body
+        name: tracking
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateSequenceTrackingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update sequence tracking information
+      tags:
+      - Sequences
+  /sequence/{id}/steps/{stepId}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a specific step from an email sequence
+      parameters:
+      - description: Sequence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Step ID
+        in: path
+        name: stepId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a step from the sequence
+      tags:
+      - Sequences
+    put:
+      consumes:
+      - application/json
+      description: Update details of a specific step within an email sequence
+      parameters:
+      - description: Sequence ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Step ID
+        in: path
+        name: stepId
+        required: true
+        type: string
+      - description: Step details to update
+        in: body
+        name: step
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStepRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a step in the sequence
+      tags:
+      - Sequences
+swagger: "2.0"

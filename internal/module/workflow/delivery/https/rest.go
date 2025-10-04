@@ -28,7 +28,17 @@ func NewWorkflowHandler(e *echo.Echo, usecase workflow.Usecase) {
 	api.PATCH("/sequence/:id", h.UpdateSequenceTracking)
 }
 
-// Handlers
+// CreateSequence godoc
+// @Summary      Create a new email sequence
+// @Description  Create a new email sequence with steps
+// @Tags         Sequences
+// @Accept       json
+// @Produce      json
+// @Param        sequence  body      dto.CreateSequenceRequest  true  "Sequence details"
+// @Success      201  {object}  dto.CreateSequenceResponse
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /sequence [post]
 func (h *workflowHandler) CreateSequence(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
 
@@ -48,6 +58,17 @@ func (h *workflowHandler) CreateSequence(c echo.Context) error {
 	return ac.CustomResponse("Sequence created successfully", resp, "", "", http.StatusCreated, nil)
 }
 
+// GetSequence godoc
+// @Summary      Get sequence details
+// @Description  Retrieve details of a specific email sequence by its ID
+// @Tags         Sequences
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Sequence ID"
+// @Success      200  {object}  models.Sequence
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /sequence/{id} [get]
 func (h *workflowHandler) GetSequence(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
 
@@ -68,6 +89,19 @@ func (h *workflowHandler) GetSequence(c echo.Context) error {
 	return ac.CustomResponse("Sequence details retrieved successfully", sequenceDetails, "", "", http.StatusOK, nil)
 }
 
+// UpdateStep godoc
+// @Summary      Update a step in the sequence
+// @Description  Update details of a specific step within an email sequence
+// @Tags         Sequences
+// @Accept       json
+// @Produce      json
+// @Param        id      path      string                   true  "Sequence ID"
+// @Param        stepId  path      string                   true  "Step ID"
+// @Param        step    body      dto.UpdateStepRequest    true  "Step details to update"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /sequence/{id}/steps/{stepId} [put]
 func (h *workflowHandler) UpdateStep(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
 
@@ -104,6 +138,18 @@ func (h *workflowHandler) UpdateStep(c echo.Context) error {
 	return ac.CustomResponse("Step updated successfully", nil, "", "", http.StatusOK, nil)
 }
 
+// DeleteStep godoc
+// @Summary      Delete a step from the sequence
+// @Description  Remove a specific step from an email sequence
+// @Tags         Sequences
+// @Accept       json
+// @Produce      json
+// @Param        id      path      string  true  "Sequence ID"
+// @Param        stepId  path      string  true  "Step ID"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /sequence/{id}/steps/{stepId} [delete]
 func (h *workflowHandler) DeleteStep(c echo.Context) error {
 	ac := c.(*ctx.CustomApplicationContext)
 
@@ -133,6 +179,18 @@ func (h *workflowHandler) DeleteStep(c echo.Context) error {
 	return ac.CustomResponse("Step deleted successfully", nil, "", "", http.StatusOK, nil)
 }
 
+// UpdateSequenceTracking godoc
+// @Summary      Update sequence tracking information
+// @Description  Update tracking information for a specific email sequence
+// @Tags         Sequences
+// @Accept       json
+// @Produce      json
+// @Param        id        path      string                           true  "Sequence ID"
+// @Param        tracking  body      dto.UpdateSequenceTrackingRequest  true  "Tracking information to update"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /sequence/{id} [patch]
 func (h *workflowHandler) UpdateSequenceTracking(c echo.Context) error {
 
 	ac := c.(*ctx.CustomApplicationContext)

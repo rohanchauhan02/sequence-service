@@ -34,4 +34,4 @@ Thumbs.db
 
 configs/app.config.local.yml
 cmd/app/configs/app.config.local.yml
-
+docs/architecture-decisions/*

@@ -12,6 +12,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/rohanchauhan02/sequence-service/docs/swagger"
+	EchoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/rohanchauhan02/sequence-service/internal/pkg/logger"
 	CustomMiddleware "github.com/rohanchauhan02/sequence-service/internal/pkg/middleware"
@@ -70,6 +72,8 @@ func Init() {
 	validator := utils.DefaultValidator()
 	e.Validator = validator
 
+	setupSwaggerRoutes(e)
+
 	// Initialize repositories
 	healthRepo := HealthRepository.NewHealthRepository(db)
 	workflowRepo := WorkflowRepository.NewWorkflowRepository(db)
@@ -104,4 +108,14 @@ func Init() {
 		log.Errorf("Server forced to shutdown: %v", err)
 	}
 	log.Info("Server exited properly.")
+}
+
+func setupSwaggerRoutes(e *echo.Echo) {
+	swagger.SwaggerInfo.Title = "Sequence Service API"
+	swagger.SwaggerInfo.Description = "This is the API documentation for the Sequence Service."
+	swagger.SwaggerInfo.Version = "1.0"
+	swagger.SwaggerInfo.Host = "localhost:8080"
+	swagger.SwaggerInfo.BasePath = "/api/v1"
+	swagger.SwaggerInfo.Schemes = []string{"http", "https"}
+	e.GET("/swagger/*", EchoSwagger.WrapHandler)
 }
