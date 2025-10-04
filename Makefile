@@ -1,16 +1,45 @@
+APP_NAME=sequence-service
+DB_STRING=postgres://user:pass@localhost:5432/sequence_db?sslmode=disable
 
-start: docs
-	go run cmd/app/main.go
+.PHONY: run build test clean migrate swagger fmt lint
 
-.PHONY: docs install-mockgen mock
-docs:
-	swag init -g cmd/app/main.go -o ./docs/swagger/
+# Run the app
+run:
+	go run cmd/api/main.go
 
-install-mockgen:
-	go install go.uber.org/mockgen@latest
+# Build binary
+build:
+	go build -o bin/$(APP_NAME) cmd/api/main.go
 
-mock:
-	mockgen -source=internal/config/config.go -destination=./files/mocks/config/mock_config.go
-	mockgen -source=internal/module/health/health.go -destination=./files/mocks/health/mock_health.go
-	mockgen -source=internal/module/workflow/workflow.go -destination=./files/mocks/workflow/mock_workflow.go
+# Run all tests
+test:
+	go test -v ./...
 
+# Clean build artifacts
+clean:
+	rm -rf bin/ coverage.out
+
+# Database migrations
+migrate-up:
+	goose -dir database/migrations postgres "$(DB_STRING)" up
+
+migrate-down:
+	goose -dir database/migrations postgres "$(DB_STRING)" down
+
+migrate-status:
+	goose -dir database/migrations postgres "$(DB_STRING)" status
+
+migrate-create:
+	goose -dir database/migrations postgres "$(DB_STRING)" create $(name) sql
+
+# Generate Swagger docs
+swagger:
+	swag init -g cmd/api/main.go -o docs
+
+# Code formatting
+fmt:
+	go fmt ./...
+
+# Lint code
+lint:
+	golangci-lint run

@@ -20,5 +20,5 @@ func NewHealthHandler(e *echo.Echo, usecase health.Usecase) {
 }
 
 func (h *healthHandler) Health(c echo.Context) error {
-	return c.JSON(200, "searvice is healthy")
+	return c.JSON(200, "Service is healthy")
 }
