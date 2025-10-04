@@ -9,8 +9,10 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+
 	"github.com/rohanchauhan02/sequence-service/internal/config"
 	"github.com/rohanchauhan02/sequence-service/internal/dto"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/logger"
 	"github.com/rohanchauhan02/sequence-service/internal/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -27,6 +29,7 @@ type CustomApplicationContext struct {
 	echo.Context
 	PostgresDB *gorm.DB
 	Config     config.ImmutableConfig
+	AppLoger   logger.Logger
 }
 
 func (c *CustomApplicationContext) CustomResponse(status string, data any, message string, errMsg string, code int, meta any) error {

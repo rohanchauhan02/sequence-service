@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/logger"
 	CustomMiddleware "github.com/rohanchauhan02/sequence-service/internal/pkg/middleware"
 
 	"github.com/rohanchauhan02/sequence-service/internal/config"
@@ -54,15 +55,17 @@ func Init() {
 	// Middleware to inject dependencies into the request context
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			requestID := c.Response().Header().Get(echo.HeaderXRequestID)
+			appLogger := logger.NewLogger("sequence-service").WithRequestID(requestID)
 			customCtx := &ctx.CustomApplicationContext{
 				Context:    c,
+				AppLoger:   appLogger,
 				Config:     cnf,
 				PostgresDB: db,
 			}
 			return next(customCtx)
 		}
 	})
-	e.Use(middleware.CORS())
 
 	validator := utils.DefaultValidator()
 	e.Validator = validator

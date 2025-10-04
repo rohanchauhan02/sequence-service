@@ -6,6 +6,7 @@ import (
 	"github.com/rohanchauhan02/sequence-service/internal/dto"
 	"github.com/rohanchauhan02/sequence-service/internal/models"
 	"github.com/rohanchauhan02/sequence-service/internal/module/workflow"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/ctx"
 )
 
 type workflowUsecase struct {
@@ -19,15 +20,19 @@ func NewWorkflowUsecase(repository workflow.Repository) workflow.Usecase {
 }
 
 func (u *workflowUsecase) CreateSequence(c echo.Context, req *dto.CreateSequenceRequest) (*dto.CreateSequenceResponse, error) {
-
+	ac := c.(*ctx.CustomApplicationContext)
 	sequenceData := &models.Sequence{
 		Name:                 req.Name,
 		OpenTrackingEnabled:  req.OpenTrackingEnabled,
 		ClickTrackingEnabled: req.ClickTrackingEnabled,
 	}
 
-	resp, err := u.repository.CreateSequence(nil, sequenceData)
+	tx := ac.PostgresDB.Begin()
+	defer tx.Rollback()
+
+	resp, err := u.repository.CreateSequence(tx, sequenceData)
 	if err != nil {
+		ac.AppLoger.Errorf("CreateSequence - failed to create sequence: %v", err)
 		return nil, err
 	}
 
@@ -42,10 +47,16 @@ func (u *workflowUsecase) CreateSequence(c echo.Context, req *dto.CreateSequence
 				WaitDays:   stepReq.WaitDays,
 			}
 		}
-		_, err = u.repository.CreateSteps(nil, steps)
+		_, err = u.repository.CreateSteps(tx, steps)
 		if err != nil {
+			ac.AppLoger.Errorf("CreateSequence - failed to create steps: %v", err)
 			return nil, err
 		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		ac.AppLoger.Errorf("CreateSequence - failed to commit transaction: %v", err)
+		return nil, err
 	}
 
 	return &dto.CreateSequenceResponse{
@@ -58,7 +69,7 @@ func (u *workflowUsecase) GetSequence(c echo.Context, sequenceID uuid.UUID) (*mo
 }
 
 func (u *workflowUsecase) UpdateStep(c echo.Context, sequenceID uuid.UUID, stepID uuid.UUID, req *dto.UpdateStepRequest) error {
-
+	ac := c.(*ctx.CustomApplicationContext)
 	existingStep, err := u.repository.GetStepByID(sequenceID, stepID)
 	if existingStep == nil {
 		return echo.NewHTTPError(404, "Step not found")
@@ -70,12 +81,22 @@ func (u *workflowUsecase) UpdateStep(c echo.Context, sequenceID uuid.UUID, stepI
 	if req.Subject != nil {
 		existingStep.Subject = *req.Subject
 	}
+
 	if req.Content != nil {
 		existingStep.Content = *req.Content
 	}
 
-	err = u.repository.UpdateStep(nil, existingStep)
+	tx := ac.PostgresDB.Begin()
+	defer tx.Rollback()
+
+	err = u.repository.UpdateStep(tx, existingStep)
 	if err != nil {
+		ac.AppLoger.Errorf("UpdateStep - failed to update step: %v", err)
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		ac.AppLoger.Errorf("UpdateStep - failed to commit transaction: %v", err)
 		return err
 	}
 
@@ -83,7 +104,20 @@ func (u *workflowUsecase) UpdateStep(c echo.Context, sequenceID uuid.UUID, stepI
 }
 
 func (u *workflowUsecase) DeleteStep(c echo.Context, sequenceID uuid.UUID, stepID uuid.UUID) error {
+	ac := c.(*ctx.CustomApplicationContext)
+	tx := ac.PostgresDB.Begin()
+	defer tx.Rollback()
 
-	return u.repository.DeleteStep(nil, sequenceID, stepID)
+	err := u.repository.DeleteStep(nil, sequenceID, stepID)
+	if err != nil {
+		ac.AppLoger.Errorf("DeleteStep - failed to delete step: %v", err)
+		return err
+	}
 
+	if err := tx.Commit().Error; err != nil {
+		ac.AppLoger.Errorf("DeleteStep - failed to commit transaction: %v", err)
+		return err
+	}
+
+	return nil
 }
