@@ -29,6 +29,10 @@ import (
 	WorkflowHandler "github.com/rohanchauhan02/sequence-service/internal/module/workflow/delivery/https"
 	WorkflowRepository "github.com/rohanchauhan02/sequence-service/internal/module/workflow/repository"
 	WorkflowUsecase "github.com/rohanchauhan02/sequence-service/internal/module/workflow/usecase"
+
+	SchedulerHandler "github.com/rohanchauhan02/sequence-service/internal/module/scheduler/delivery/https"
+	SchedulerRepository "github.com/rohanchauhan02/sequence-service/internal/module/scheduler/repository"
+	SchedulerUsecase "github.com/rohanchauhan02/sequence-service/internal/module/scheduler/usecase"
 )
 
 var log = logger.NewLogger("SEQUENCE-SERVICE")
@@ -92,14 +96,17 @@ func Init() {
 	// Initialize repositories
 	healthRepo := HealthRepository.NewHealthRepository(db)
 	workflowRepo := WorkflowRepository.NewWorkflowRepository(db)
+	schedulerRepo := SchedulerRepository.NewSchedulerRepository(db)
 
 	// Initialize usecases
 	healthUsecase := HealthUsecase.NewHealthUsecase(healthRepo)
 	workflowUsecase := WorkflowUsecase.NewWorkflowUsecase(workflowRepo)
+	schedulerUsecase := SchedulerUsecase.NewSchedulerUsecase(schedulerRepo)
 
 	// Initialize handlers
 	HealthHandler.NewHealthHandler(e, healthUsecase)
 	WorkflowHandler.NewWorkflowHandler(e, workflowUsecase)
+	SchedulerHandler.NewSchedulerHandler(e, schedulerUsecase)
 
 	// Start server in a separate goroutine
 	serverAddr := fmt.Sprintf(":%s", cnf.GetPort())
