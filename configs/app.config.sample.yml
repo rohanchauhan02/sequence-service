@@ -10,3 +10,11 @@ DB:
   MAX_OPEN_CONNS: 100
   MAX_LIFETIME_CONNS: 300
   SSL_MODE: disable
+
+KAFKA:
+  BROKERS: localhost:9092,localhost:9093
+  TOPICS:
+    EMAIL_JOBS: email-jobs
+    FOLLOWUP_EVENTS: followup-events
+    EMAIL_RETRIES: email-retries
+    EMAIL_EVENTS: email-events

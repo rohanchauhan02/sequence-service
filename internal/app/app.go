@@ -11,12 +11,12 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/labstack/gommon/log"
 	"github.com/rohanchauhan02/sequence-service/docs/swagger"
 	EchoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/rohanchauhan02/sequence-service/internal/pkg/logger"
 	CustomMiddleware "github.com/rohanchauhan02/sequence-service/internal/pkg/middleware"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/transporter/kafka"
 
 	"github.com/rohanchauhan02/sequence-service/internal/config"
 	HealthHandler "github.com/rohanchauhan02/sequence-service/internal/module/health/delivery/https"
@@ -31,6 +31,8 @@ import (
 	WorkflowUsecase "github.com/rohanchauhan02/sequence-service/internal/module/workflow/usecase"
 )
 
+var log = logger.NewLogger("SEQUENCE-SERVICE")
+
 func Init() {
 	e := echo.New()
 
@@ -42,9 +44,21 @@ func Init() {
 
 	db, err := dbClient.InitClient(context.TODO())
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Errorf("Failed to connect to database: %v", err)
 		panic(err)
 	}
+
+	kafkaClient, err := kafka.NewKafkaClient(cnf)
+	if err != nil {
+		log.Errorf("Failed to initialize Kafka client: %v", err)
+		panic(err)
+	}
+
+	defer func() {
+		if err := kafkaClient.Close(); err != nil {
+			log.Errorf("Failed to close Kafka client: %v", err)
+		}
+	}()
 
 	// use requestID middleware
 	e.Use(CustomMiddleware.MiddlewareRequestID())
@@ -58,12 +72,13 @@ func Init() {
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			requestID := c.Response().Header().Get(echo.HeaderXRequestID)
-			appLogger := logger.NewLogger("sequence-service").WithRequestID(requestID)
+			appLogger := log.WithRequestID(requestID)
 			customCtx := &ctx.CustomApplicationContext{
-				Context:    c,
-				AppLoger:   appLogger,
-				Config:     cnf,
-				PostgresDB: db,
+				Context:  c,
+				AppLoger: appLogger,
+				Config:   cnf,
+				Kakfa:    kafkaClient,
+				Postgres: db,
 			}
 			return next(customCtx)
 		}
@@ -90,7 +105,7 @@ func Init() {
 	serverAddr := fmt.Sprintf(":%s", cnf.GetPort())
 	go func() {
 		if err := e.Start(serverAddr); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server shutdown unexpectedly: %v", err)
+			log.Errorf("Server shutdown unexpectedly: %v", err)
 		}
 	}()
 

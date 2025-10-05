@@ -27,7 +27,7 @@ func Test_InitClient(t *testing.T) {
 	mockConf := mock_config.NewMockImmutableConfig(ctrl)
 	mockConf.EXPECT().GetDBConf().Return(config.DB{
 		Host:     "localhost",
-		Port:     "5432",
+		Port:     5432,
 		User:     "postgres",
 		Password: "password",
 		Name:     "sequence_db",

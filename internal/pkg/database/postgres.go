@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/labstack/gommon/log"
 	"github.com/rohanchauhan02/sequence-service/internal/config"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -23,6 +23,7 @@ type (
 )
 
 var (
+	log  = logger.NewLogger("POSTGRES")
 	once sync.Once
 	db   *gorm.DB
 	err  error

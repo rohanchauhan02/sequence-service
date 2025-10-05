@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
@@ -12,16 +12,52 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: kafka
-    ports:
-      - "9092:9092"
-      - "29092:29092"
     depends_on:
       - zookeeper
+    ports:
+      - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: sequence_db
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sequence-service
+    depends_on:
+      - kafka
+      - postgres
+    ports:
+      - 8080:8080
+    environment:
+      APP_ENV: development
+      GO_SEQUENCE_PORT: 8080
+      GO_SEQUENCE_DB_HOST: postgres
+      GO_SEQUENCE_DB_PORT: 5432
+      GO_SEQUENCE_DB_NAME: sequence_db
+      GO_SEQUENCE_DB_USER: root
+      GO_SEQUENCE_DB_PASSWORD: root
+      GO_SEQUENCE_DB_MAX_IDLE_CONNS: 10
+      GO_SEQUENCE_DB_MAX_OPEN_CONNS: 100
+      GO_SEQUENCE_DB_MAX_LIFETIME_CONNS: 300
+      GO_SEQUENCE_DB_SSL_MODE: disable
+      GO_SEQUENCE_KAFKA_BROKERS: kafka:9092
+      GO_SEQUENCE_KAFKA_TOPICS_EMAIL_JOBS: email-jobs
+      GO_SEQUENCE_KAFKA_TOPICS_FOLLOWUP_EVENTS: followup-events
+      GO_SEQUENCE_KAFKA_TOPICS_EMAIL_RETRIES: email-retries
+      GO_SEQUENCE_KAFKA_TOPICS_EMAIL_EVENTS: email-events

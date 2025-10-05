@@ -48,6 +48,20 @@ func (mr *MockImmutableConfigMockRecorder) GetDBConf() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDBConf", reflect.TypeOf((*MockImmutableConfig)(nil).GetDBConf))
 }
 
+// GetKafkaConf mocks base method.
+func (m *MockImmutableConfig) GetKafkaConf() config.Kafka {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetKafkaConf")
+	ret0, _ := ret[0].(config.Kafka)
+	return ret0
+}
+
+// GetKafkaConf indicates an expected call of GetKafkaConf.
+func (mr *MockImmutableConfigMockRecorder) GetKafkaConf() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKafkaConf", reflect.TypeOf((*MockImmutableConfig)(nil).GetKafkaConf))
+}
+
 // GetPort mocks base method.
 func (m *MockImmutableConfig) GetPort() string {
 	m.ctrl.T.Helper()

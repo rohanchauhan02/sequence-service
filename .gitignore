@@ -36,3 +36,4 @@ configs/app.config.local.yml
 cmd/app/configs/app.config.local.yml
 docs/architecture-decisions/system-design.md
 
+docker-compose.yml

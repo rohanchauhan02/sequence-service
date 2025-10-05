@@ -27,7 +27,7 @@ func (u *workflowUsecase) CreateSequence(c echo.Context, req *dto.CreateSequence
 		ClickTrackingEnabled: req.ClickTrackingEnabled,
 	}
 
-	tx := ac.PostgresDB.Begin()
+	tx := ac.Postgres.Begin()
 	defer tx.Rollback()
 
 	resp, err := u.repository.CreateSequence(tx, sequenceData)
@@ -89,7 +89,7 @@ func (u *workflowUsecase) UpdateSequenceTracking(c echo.Context, sequenceID uuid
 		sequence.ClickTrackingEnabled = *req.ClickTrackingEnabled
 	}
 
-	tx := ac.PostgresDB.Begin()
+	tx := ac.Postgres.Begin()
 	defer tx.Rollback()
 
 	err = u.repository.UpdateSequenceTracking(tx, sequence)
@@ -126,7 +126,7 @@ func (u *workflowUsecase) UpdateStep(c echo.Context, sequenceID uuid.UUID, stepI
 		existingStep.Content = *req.Content
 	}
 
-	tx := ac.PostgresDB.Begin()
+	tx := ac.Postgres.Begin()
 	defer tx.Rollback()
 
 	err = u.repository.UpdateStep(tx, existingStep)
@@ -145,7 +145,7 @@ func (u *workflowUsecase) UpdateStep(c echo.Context, sequenceID uuid.UUID, stepI
 
 func (u *workflowUsecase) DeleteStep(c echo.Context, sequenceID uuid.UUID, stepID uuid.UUID) error {
 	ac := c.(*ctx.CustomApplicationContext)
-	tx := ac.PostgresDB.Begin()
+	tx := ac.Postgres.Begin()
 	defer tx.Rollback()
 
 	err := u.repository.DeleteStep(nil, sequenceID, stepID)

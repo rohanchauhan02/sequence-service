@@ -1,12 +1,14 @@
 -- +goose Up
 -- +goose StatementBegin
 
+-- Create enums
 CREATE TYPE mailbox_status AS ENUM ('active', 'inactive', 'suspended');
 CREATE TYPE contact_status AS ENUM ('active', 'unsubscribed');
 CREATE TYPE sequence_contact_status AS ENUM ('pending', 'in_progress', 'completed', 'paused', 'bounced', 'cancelled');
 CREATE TYPE email_queue_status AS ENUM ('scheduled', 'queued', 'sending', 'sent', 'failed', 'cancelled');
 CREATE TYPE email_event_type AS ENUM ('sent', 'delivered', 'opened', 'clicked', 'bounced', 'failed');
 
+-- Create tables
 CREATE TABLE mailboxes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -95,12 +97,13 @@ CREATE TABLE kafka_batches (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     topic VARCHAR(100) NOT NULL,
     partition INTEGER NOT NULL,
-    offset BIGINT NOT NULL,
+    kafka_offset BIGINT NOT NULL,
     processed_at TIMESTAMPTZ DEFAULT NOW(),
     email_count INTEGER DEFAULT 0,
     batch_size INTEGER DEFAULT 0
 );
 
+-- Create indexes
 CREATE INDEX idx_sequence_mailboxes_mailbox_id ON sequence_mailboxes(mailbox_id);
 CREATE INDEX idx_contacts_email ON contacts(email);
 CREATE INDEX idx_contacts_status ON contacts(status);
@@ -114,6 +117,15 @@ CREATE INDEX idx_email_queues_mailbox_date ON email_queues(mailbox_id, scheduled
 CREATE INDEX idx_mailbox_daily_counts_date ON mailbox_daily_counts(date);
 CREATE INDEX idx_email_events_email_queue ON email_events(email_queue_id);
 CREATE INDEX idx_email_events_type ON email_events(event_type);
+
+-- Create updated_at function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Create updated_at triggers
 CREATE TRIGGER update_mailboxes_updated_at
@@ -135,6 +147,7 @@ CREATE TRIGGER update_email_queues_updated_at
     BEFORE UPDATE ON email_queues
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
 -- +goose StatementEnd
 
 -- +goose Down
@@ -145,6 +158,7 @@ DROP TRIGGER IF EXISTS update_sequence_contacts_updated_at ON sequence_contacts;
 DROP TRIGGER IF EXISTS update_contacts_updated_at ON contacts;
 DROP TRIGGER IF EXISTS update_mailboxes_updated_at ON mailboxes;
 
+-- Drop indexes
 DROP INDEX IF EXISTS idx_email_events_type;
 DROP INDEX IF EXISTS idx_email_events_email_queue;
 DROP INDEX IF EXISTS idx_mailbox_daily_counts_date;
@@ -159,6 +173,7 @@ DROP INDEX IF EXISTS idx_contacts_status;
 DROP INDEX IF EXISTS idx_contacts_email;
 DROP INDEX IF EXISTS idx_sequence_mailboxes_mailbox_id;
 
+-- Drop tables
 DROP TABLE IF EXISTS email_events;
 DROP TABLE IF EXISTS mailbox_daily_counts;
 DROP TABLE IF EXISTS email_queues;
@@ -168,9 +183,13 @@ DROP TABLE IF EXISTS sequence_mailboxes;
 DROP TABLE IF EXISTS mailboxes;
 DROP TABLE IF EXISTS kafka_batches;
 
+-- Drop enums
 DROP TYPE IF EXISTS email_event_type;
 DROP TYPE IF EXISTS email_queue_status;
 DROP TYPE IF EXISTS sequence_contact_status;
 DROP TYPE IF EXISTS contact_status;
 DROP TYPE IF EXISTS mailbox_status;
+
+-- Drop function
+DROP FUNCTION IF EXISTS update_updated_at_column();
 -- +goose StatementEnd

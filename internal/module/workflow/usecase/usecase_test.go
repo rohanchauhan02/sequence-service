@@ -21,7 +21,7 @@ func newMockCtx(db *gorm.DB) echo.Context {
 	e := echo.New()
 	return &ctx.CustomApplicationContext{
 		Context:    e.NewContext(nil, nil),
-		PostgresDB: db,
+		Postgres: db,
 		AppLoger:   logger.NewLogger(),
 	}
 }

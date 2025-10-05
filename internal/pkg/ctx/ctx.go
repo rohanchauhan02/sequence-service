@@ -13,6 +13,7 @@ import (
 	"github.com/rohanchauhan02/sequence-service/internal/config"
 	"github.com/rohanchauhan02/sequence-service/internal/dto"
 	"github.com/rohanchauhan02/sequence-service/internal/pkg/logger"
+	"github.com/rohanchauhan02/sequence-service/internal/pkg/transporter/kafka"
 	"github.com/rohanchauhan02/sequence-service/internal/pkg/utils"
 	"gorm.io/gorm"
 )
@@ -27,9 +28,10 @@ func (v *Validator) Validate(i interface{}) error {
 
 type CustomApplicationContext struct {
 	echo.Context
-	PostgresDB *gorm.DB
-	Config     config.ImmutableConfig
-	AppLoger   logger.Logger
+	AppLoger logger.Logger
+	Config   config.ImmutableConfig
+	Kakfa    kafka.KafkaClient
+	Postgres *gorm.DB
 }
 
 func (c *CustomApplicationContext) CustomResponse(status string, data any, message string, errMsg string, code int, meta any) error {
@@ -98,7 +100,7 @@ func NewMockCtx(db *gorm.DB) echo.Context {
 	c := e.NewContext(nil, nil)
 	return &CustomApplicationContext{
 		Context:    c,
-		PostgresDB: db,
+		Postgres: db,
 		AppLoger:   logger.NewLogger(),
 	}
 }

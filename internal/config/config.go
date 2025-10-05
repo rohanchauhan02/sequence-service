@@ -13,15 +13,17 @@ type (
 	ImmutableConfig interface {
 		GetPort() string
 		GetDBConf() DB
+		GetKafkaConf() Kafka
 	}
 
 	config struct {
-		Port string `mapstructure:"PORT"`
-		DB   DB     `mapstructure:"DB"`
+		Port  string `mapstructure:"PORT"`
+		DB    DB     `mapstructure:"DB"`
+		Kafka Kafka  `mapstructure:"KAFKA"`
 	}
 	DB struct {
 		Host             string `mapstructure:"HOST"`
-		Port             string `mapstructure:"PORT"`
+		Port             int    `mapstructure:"PORT"`
 		Name             string `mapstructure:"NAME"`
 		User             string `mapstructure:"USER"`
 		Password         string `mapstructure:"PASSWORD"`
@@ -29,6 +31,17 @@ type (
 		MaxOpenConns     int    `mapstructure:"MAX_OPEN_CONNS"`
 		MaxLifetimeConns int    `mapstructure:"MAX_LIFETIME_CONNS"`
 		SSLMode          string `mapstructure:"SSL_MODE"`
+	}
+	Kafka struct {
+		Broker string `mapstructure:"BROKERS"`
+		Topics Topic    `mapstructure:"TOPICS"`
+	}
+
+	Topic struct {
+		EmailJobs      string `mapstructure:"EMAIL_JOBS"`
+		FollowupEvents string `mapstructure:"FOLLOWUP_EVENTS"`
+		EmailRetries   string `mapstructure:"EMAIL_RETRIES"`
+		EmailEvents    string `mapstructure:"EMAIL_EVENTS"`
 	}
 )
 
@@ -48,6 +61,8 @@ func NewImmutableConfig() ImmutableConfig {
 				configName = "app.config.dev"
 			case "production":
 				configName = "app.config.prod"
+			default:
+				configName = "app.config.dev"
 			}
 		}
 
@@ -79,4 +94,8 @@ func (c *config) GetPort() string {
 
 func (im *config) GetDBConf() DB {
 	return im.DB
+}
+
+func (im *config) GetKafkaConf() Kafka {
+	return im.Kafka
 }
