@@ -1,4 +1,4 @@
-APP_NAME=sequence-service
+APP_NAME=engine
 USER=root
 PASSWORD=root
 DB_NAME=sequence_db
@@ -12,7 +12,7 @@ run:
 
 # Build binary
 build:
-	go build -o bin/$(APP_NAME) cmd/api/main.go
+	go build -o $(APP_NAME) cmd/app/main.go
 
 # Run all tests
 test:
